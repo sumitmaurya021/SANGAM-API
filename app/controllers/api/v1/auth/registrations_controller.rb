@@ -8,8 +8,12 @@ module Api
           user.verified = false # Mark as unverified
           
           if user.save
-            user.generate_otp!
-            # In a real app, send OTP via SMS/Email here
+            otp = user.generate_otp!
+            begin
+              OtpMailer.otp_email(user, otp).deliver_now
+            rescue => e
+              Rails.logger.error "Failed to send registration OTP: #{e.message}"
+            end
             render_success(message: 'Registration initiated. Please verify your OTP.', data: { user_id: user.id }, status: :created)
           else
             render_error(message: 'Registration failed', errors: user.errors.messages)

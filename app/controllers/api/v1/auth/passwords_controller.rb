@@ -7,8 +7,8 @@ module Api
         def forgot
           user = User.find_by(email: params[:email]) || User.find_by(phone_number: params[:phone_number])
           if user
-            user.generate_otp!
-            # Send OTP via email/SMS here for password reset
+            otp = user.generate_otp!
+            OtpMailer.otp_email(user, otp).deliver_now if user.email.present?
             render_success(message: 'Password reset OTP sent successfully', data: { user_id: user.id })
           else
             render_error(message: 'User not found', status: :not_found)

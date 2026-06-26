@@ -47,11 +47,19 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "database_cleaner-active_record"
+  gem "shoulda-matchers"
+  gem "rails-controller-testing"
 end
 gem 'jwt'
 gem 'rack-attack'
 gem 'kaminari'
 gem 'redis'
 gem "blueprinter", "~> 1.3"
+gem 'rotp'
 
 gem "dotenv-rails", "~> 3.2"

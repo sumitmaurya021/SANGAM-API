@@ -17,8 +17,18 @@ module ApplicationCable
     private
 
     def find_verified_user
-      verified = env['warden'].user
-      verified || reject_unauthorized_connection
+      token = request.params[:token]
+      if token.present?
+        begin
+          secret_key = Rails.application.secret_key_base.to_s
+          decoded = JWT.decode(token, secret_key)[0]
+          user = User.find_by(id: decoded['user_id'])
+          return user if user
+        rescue JWT::DecodeError, JWT::ExpiredSignature
+          # Ignore
+        end
+      end
+      reject_unauthorized_connection
     end
 
     def broadcast_presence(online)

@@ -35,9 +35,9 @@ module Api
 
           # Chart: last 7 days daily activity
           six_days_ago = 6.days.ago.beginning_of_day
-          daily_users = User.where('created_at >= ?', six_days_ago).group_by_day(:created_at).count
-          daily_posts = Post.where('created_at >= ?', six_days_ago).group_by_day(:created_at).count
-          daily_likes = Like.where('created_at >= ?', six_days_ago).group_by_day(:created_at).count
+          daily_users = User.where('created_at >= ?', six_days_ago).pluck(:created_at).group_by(&:to_date).transform_values(&:size)
+          daily_posts = Post.where('created_at >= ?', six_days_ago).pluck(:created_at).group_by(&:to_date).transform_values(&:size)
+          daily_likes = Like.where('created_at >= ?', six_days_ago).pluck(:created_at).group_by(&:to_date).transform_values(&:size)
 
           date_range = (6.days.ago.to_date..Date.today)
           chart_labels = date_range.map { |d| d.strftime('%b %d') }

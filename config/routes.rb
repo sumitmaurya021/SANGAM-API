@@ -24,8 +24,6 @@ Rails.application.routes.draw do
         post 'totp/enable', to: 'totp#enable'
         post 'totp/confirm', to: 'totp#confirm'
         post 'totp/disable', to: 'totp#disable'
-
-        post ':provider/callback', to: 'omniauth_callbacks#callback'
       end
 
       # Phase 4

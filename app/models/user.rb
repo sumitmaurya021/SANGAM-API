@@ -141,11 +141,11 @@ class User < ApplicationRecord
   end
 
   def online?
-    is_ai? || self[:online]
+    is_ai? || read_attribute(:online)
   end
 
   def online
-    is_ai? || self[:online]
+    is_ai? || read_attribute(:online)
   end
 
   def online_status
@@ -169,21 +169,48 @@ class User < ApplicationRecord
     all_friends & user.all_friends
   end
 
+  has_many :remember_tokens, dependent: :destroy
+
+  before_save :revoke_remember_tokens, if: :will_save_change_to_password_digest?
+
+  def revoke_remember_tokens
+    remember_tokens.destroy_all if persisted?
+  end
+
+  def confirmed?
+    confirmed_at.present?
+  end
+
   # ─── 2FA / OTP helpers ──────────────────────────────────────────────────
   def generate_otp!
-    self.otp_secret = '%06d' % rand(10**6)
+    raw_otp = '%06d' % rand(10**6)
+    self.otp_secret = BCrypt::Password.create(raw_otp)
     self.otp_expires_at = 10.minutes.from_now
+    self.otp_attempts = 0
     save!
+    raw_otp
   end
 
   def valid_otp?(code)
     return false if otp_secret.blank? || otp_expires_at.blank?
     return false if Time.current > otp_expires_at
-    otp_secret == code.to_s
+    return false if otp_attempts >= 5
+
+    is_valid = begin
+      BCrypt::Password.new(otp_secret) == code.to_s
+    rescue BCrypt::Errors::InvalidHash
+      otp_secret == code.to_s
+    end
+
+    unless is_valid
+      increment!(:otp_attempts)
+    end
+
+    is_valid
   end
 
   def clear_otp!
-    update(otp_secret: nil, otp_expires_at: nil)
+    update(otp_secret: nil, otp_expires_at: nil, otp_attempts: 0)
   end
 
   def two_factor_enabled?
@@ -200,5 +227,11 @@ class User < ApplicationRecord
       user.is_ai = true
       user.confirmed_at = Time.current
     end
+  end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options[:except] = Array(options[:except]) + [:avatar, :cover_photo]
+    super(options)
   end
 end

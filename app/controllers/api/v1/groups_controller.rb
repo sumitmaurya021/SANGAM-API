@@ -16,10 +16,11 @@ module Api
 
       def create
         group = Group.new(group_params)
+        group.owner = @current_user
         
         if group.save
           # Creator is automatically an admin member
-          GroupMembership.create!(group: group, user: @current_user, role: 'admin', status: 'approved')
+          GroupMembership.create!(group: group, user: @current_user, role: 'admin', status: 'active')
           render_success(message: 'Group created successfully', data: GroupBlueprint.render_as_hash(group, view: :normal), status: :created)
         else
           render_error(message: 'Failed to create group', errors: group.errors.messages)
@@ -47,7 +48,7 @@ module Api
         end
 
         # If group is public, maybe auto-approve, else pending
-        membership.status = @group.privacy == 'public' ? 'approved' : 'pending'
+        membership.status = @group.privacy == 'public' ? 'active' : 'pending'
         membership.role = 'member'
 
         if membership.save
