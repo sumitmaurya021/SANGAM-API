@@ -1,34 +1,35 @@
 Rails.application.routes.draw do
-  mount ActionCable.server => '/cable'
-  
+  root to: proc { [ 200, {}, [ "SANGAM API" ] ] }
+  mount ActionCable.server => "/cable"
+
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
       namespace :auth do
-        post 'signup', to: 'registrations#create'
-        post 'login', to: 'sessions#create'
-        delete 'logout', to: 'sessions#destroy'
-        
-        post 'verify-otp', to: 'otps#verify'
-        post 'resend-otp', to: 'otps#resend'
-        
-        post 'forgot-password', to: 'passwords#forgot'
-        post 'reset-password', to: 'passwords#reset'
-        post 'change-password', to: 'passwords#update'
+        post "signup", to: "registrations#create"
+        post "login", to: "sessions#create"
+        delete "logout", to: "sessions#destroy"
 
-        get 'confirmation', to: 'confirmations#show'
-        post 'confirmation', to: 'confirmations#create'
+        post "verify-otp", to: "otps#verify"
+        post "resend-otp", to: "otps#resend"
 
-        get 'unlock', to: 'unlocks#show'
-        post 'unlock', to: 'unlocks#create'
+        post "forgot-password", to: "passwords#forgot"
+        post "reset-password", to: "passwords#reset"
+        post "change-password", to: "passwords#update"
 
-        post 'totp/enable', to: 'totp#enable'
-        post 'totp/confirm', to: 'totp#confirm'
-        post 'totp/disable', to: 'totp#disable'
+        get "confirmation", to: "confirmations#show"
+        post "confirmation", to: "confirmations#create"
+
+        get "unlock", to: "unlocks#show"
+        post "unlock", to: "unlocks#create"
+
+        post "totp/enable", to: "totp#enable"
+        post "totp/confirm", to: "totp#confirm"
+        post "totp/disable", to: "totp#disable"
       end
 
       # Phase 4
-      resources :users, only: [:index, :show, :update, :destroy]
-      resources :profiles, only: [:show] do
+      resources :users, only: [ :index, :show, :update, :destroy ]
+      resources :profiles, only: [ :show ] do
         collection do
           get :friends_list
           get :search
@@ -42,11 +43,11 @@ Rails.application.routes.draw do
       end
 
       resources :posts do
-        resources :comments, only: [:index, :create, :update, :destroy]
-        resources :likes, only: [:create]
-        delete 'likes', to: 'likes#destroy'
-        resources :shares, only: [:create]
-        resources :post_collaborators, only: [:create, :destroy] do
+        resources :comments, only: [ :index, :create, :update, :destroy ]
+        resources :likes, only: [ :create ]
+        delete "likes", to: "likes#destroy"
+        resources :shares, only: [ :create ]
+        resources :post_collaborators, only: [ :create, :destroy ] do
           collection do
             post :accept
             post :reject
@@ -57,9 +58,9 @@ Rails.application.routes.draw do
         member do
           post :view
         end
-        resources :reel_comments, only: [:index, :create, :update, :destroy]
-        resources :reel_likes, only: [:create]
-        delete 'reel_likes', to: 'reel_likes#destroy'
+        resources :reel_comments, only: [ :index, :create, :update, :destroy ]
+        resources :reel_likes, only: [ :create ]
+        delete "reel_likes", to: "reel_likes#destroy"
       end
       resources :stories do
         collection do
@@ -90,7 +91,7 @@ Rails.application.routes.draw do
       end
       resources :events do
         member do
-          post :respond, to: 'events#respond_to_event'
+          post :respond, to: "events#respond_to_event"
         end
         resources :event_responses
       end
@@ -139,12 +140,12 @@ Rails.application.routes.draw do
       end
 
       # Phase C: Auxiliary Endpoints
-      get 'search', to: 'search#index'
-      get 'music_search', to: 'music_search#search'
-      get 'link_previews', to: 'link_previews#show'
-      get 'memories', to: 'memories#index'
-      post 'interactions', to: 'interactions#create'
-      
+      get "search", to: "search#index"
+      get "music_search", to: "music_search#search"
+      get "link_previews", to: "link_previews#show"
+      get "memories", to: "memories#index"
+      post "interactions", to: "interactions#create"
+
       namespace :ai_features do
         post :generate_caption
         post :rewrite_message
@@ -155,13 +156,13 @@ Rails.application.routes.draw do
         post :auto_fill_listing
       end
 
-      patch 'settings/dark_mode', to: 'settings#toggle_dark_mode'
+      patch "settings/dark_mode", to: "settings#toggle_dark_mode"
 
       namespace :admin do
-        get 'dashboard', to: 'dashboard#index'
-        get 'dashboard/users', to: 'dashboard#users'
-        get 'dashboard/posts', to: 'dashboard#posts'
-        get 'dashboard/users/:id', to: 'dashboard#user_details'
+        get "dashboard", to: "dashboard#index"
+        get "dashboard/users", to: "dashboard#users"
+        get "dashboard/posts", to: "dashboard#posts"
+        get "dashboard/users/:id", to: "dashboard#user_details"
       end
 
       # Phase 7
@@ -188,7 +189,7 @@ Rails.application.routes.draw do
       resources :category_tags
       resources :profile_highlights do
         collection do
-          get :index, as: ''
+          get :index, as: ""
         end
         member do
           post :add_story
