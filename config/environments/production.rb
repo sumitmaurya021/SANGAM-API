@@ -60,13 +60,13 @@ Rails.application.configure do
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
-    port:                 465,
+    address:              ENV.fetch('SMTP_ADDRESS', 'smtp-relay.brevo.com'),
+    port:                 ENV.fetch('SMTP_PORT', 587).to_i,
     domain:               ENV.fetch('SMTP_DOMAIN', 'gmail.com'),
     user_name:            ENV['SMTP_USERNAME'],
     password:             ENV['SMTP_PASSWORD'],
     authentication:       :login,
-    ssl:                  true,
+    enable_starttls_auto: true,
     open_timeout:         15,
     read_timeout:         15
   }
