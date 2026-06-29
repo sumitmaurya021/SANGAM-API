@@ -19,8 +19,7 @@ module Api
         group.owner = @current_user
         
         if group.save
-          # Creator is automatically an admin member
-          GroupMembership.create!(group: group, user: @current_user, role: 'admin', status: 'active')
+          # Creator is automatically an admin member via model after_create
           render_success(message: 'Group created successfully', data: GroupBlueprint.render_as_hash(group, view: :normal), status: :created)
         else
           render_error(message: 'Failed to create group', errors: group.errors.messages)

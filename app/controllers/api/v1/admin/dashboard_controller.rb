@@ -76,9 +76,9 @@ module Api
               recent_posts: PostBlueprint.render_as_hash(recent_posts, view: :normal)
             },
             top_users: {
-              top_posters: top_posters.map { |u| { id: u.id, name: u.full_name, count: u.posts_count } },
-              top_likers: top_likers.map { |u| { id: u.id, name: u.full_name, count: u.likes_count } },
-              top_commenters: top_commenters.map { |u| { id: u.id, name: u.full_name, count: u.comments_count } }
+              top_posters: top_posters.map { |u| { id: u.id, name: u.name, count: u.posts_count } },
+              top_likers: top_likers.map { |u| { id: u.id, name: u.name, count: u.likes_count } },
+              top_commenters: top_commenters.map { |u| { id: u.id, name: u.name, count: u.comments_count } }
             },
             growth_statistics: {
               users_last_30_days: users_last_30_days,

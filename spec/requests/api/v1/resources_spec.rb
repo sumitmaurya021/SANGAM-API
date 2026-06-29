@@ -98,7 +98,7 @@ RSpec.describe 'Core API Resources', type: :request do
     it 'allows joining group' do
       post "/api/v1/groups/#{group.id}/join", headers: auth_headers(other_user)
       expect(response).to have_http_status(:ok)
-      expect(group.users.include?(other_user)).to be true
+      expect(group.members.include?(other_user)).to be true
     end
   end
 
@@ -168,9 +168,9 @@ RSpec.describe 'Core API Resources', type: :request do
     end
 
     it 'adds bookmarks to collections' do
+      bookmark = create(:bookmark, user: user, bookmarkable: post_item)
       patch "/api/v1/bookmark_collections/#{collection.id}/add_bookmark", params: {
-        bookmarkable_type: 'Post',
-        bookmarkable_id: post_item.id
+        bookmark_id: bookmark.id
       }, headers: headers
       expect(response).to have_http_status(:ok)
       expect(collection.bookmarks.count).to eq(1)

@@ -5,7 +5,7 @@ module Api
         before_action :authenticate_request!, only: [:destroy]
 
         def create
-          user = User.find_by(email: params[:email]) || User.find_by(phone_number: params[:phone_number])
+          user = User.find_by(email: params[:email])
 
           if user&.authenticate(params[:password])
             # If the user is NOT verified, they must verify their OTP first.
