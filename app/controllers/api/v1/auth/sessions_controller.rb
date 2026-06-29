@@ -11,11 +11,7 @@ module Api
             # If the user is NOT verified, they must verify their OTP first.
             unless user.verified?
               otp = user.generate_otp!
-              begin
-                OtpMailer.otp_email(user, otp).deliver_now
-              rescue => e
-                Rails.logger.error "Failed to send verification OTP: #{e.message}"
-              end
+              SendOtpEmailJob.perform_later(user.id, otp)
               return render_success(message: 'Account not verified. Please verify your OTP.', data: { user_id: user.id, require_otp: true })
             end
 
@@ -40,11 +36,7 @@ module Api
             # Otherwise, OTP is required. Set remember_me_pending if remember_me is true
             user.update(remember_me_pending: params[:remember_me] == true)
             otp = user.generate_otp!
-            begin
-              OtpMailer.otp_email(user, otp).deliver_now
-            rescue => e
-              Rails.logger.error "Failed to send login OTP: #{e.message}"
-            end
+            SendOtpEmailJob.perform_later(user.id, otp)
 
             render_success(message: 'Login successful. Please verify your OTP.', data: { user_id: user.id, require_otp: true })
           else

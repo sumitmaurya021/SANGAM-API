@@ -9,11 +9,7 @@ module Api
           
           if user.save
             otp = user.generate_otp!
-            begin
-              OtpMailer.otp_email(user, otp).deliver_now
-            rescue => e
-              Rails.logger.error "Failed to send registration OTP: #{e.message}"
-            end
+            SendOtpEmailJob.perform_later(user.id, otp)
             render_success(message: 'Registration initiated. Please verify your OTP.', data: { user_id: user.id }, status: :created)
           else
             render_error(message: 'Registration failed', errors: user.errors.messages)

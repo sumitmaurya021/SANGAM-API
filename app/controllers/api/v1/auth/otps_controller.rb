@@ -57,11 +57,7 @@ module Api
           end
 
           otp = user.generate_otp!
-          begin
-            OtpMailer.otp_email(user, otp).deliver_now
-          rescue => e
-            Rails.logger.error "Failed to resend OTP: #{e.message}"
-          end
+          SendOtpEmailJob.perform_later(user.id, otp)
           render_success(message: 'OTP resent successfully')
         end
       end
