@@ -125,6 +125,11 @@ FactoryBot.define do
   factory :poll do
     association :post
     question { 'Do you like Rails?' }
+    
+    after(:build) do |poll|
+      poll.poll_options << build(:poll_option, poll: poll, body: 'Option 1')
+      poll.poll_options << build(:poll_option, poll: poll, body: 'Option 2')
+    end
   end
 
   factory :poll_option do
@@ -155,12 +160,14 @@ FactoryBot.define do
   factory :article do
     association :user
     title { Faker::Book.title }
+    content { Faker::Lorem.paragraph }
   end
 
   factory :marketplace_listing do
     association :user
     title { 'Old Laptop' }
     price { 150.0 }
+    condition { 'new' }
   end
 
   factory :group_chat do
@@ -177,5 +184,24 @@ FactoryBot.define do
     association :group_chat
     association :user
     body { 'Hello guys' }
+  end
+
+  factory :fundraiser do
+    association :post
+    title { 'Help me' }
+    goal_amount { 1000 }
+    description { 'Description' }
+    status { 'active' }
+  end
+
+  factory :profile_highlight do
+    association :user
+    name { 'My Highlights' }
+  end
+
+  factory :post_collaborator do
+    association :post
+    association :user
+    status { 'pending' }
   end
 end

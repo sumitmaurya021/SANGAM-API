@@ -54,6 +54,7 @@ group :development, :test do
   gem "database_cleaner-active_record"
   gem "shoulda-matchers"
   gem "rails-controller-testing"
+  gem "simplecov", require: false
 end
 gem 'jwt'
 gem 'rack-attack'

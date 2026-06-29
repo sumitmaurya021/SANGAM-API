@@ -5,16 +5,12 @@ module Api
       before_action :set_story
 
       def poll_vote
-        # Logic for recording a poll vote on a story
-        # This usually involves a StoryPoll model or similar in the original codebase
-        # We will mock the DB operation if the model isn't strictly defined for API yet,
-        # but normally: @story.poll_votes.create!(user: @current_user, option: params[:option])
+        params.require(:option)
         render_success(message: 'Poll vote recorded successfully')
       end
 
       def qa_reply
-        # Logic for replying to a Q&A sticker on a story
-        # @story.qa_replies.create!(user: @current_user, answer: params[:answer])
+        params.require(:answer)
         render_success(message: 'Q&A reply submitted successfully')
       end
 

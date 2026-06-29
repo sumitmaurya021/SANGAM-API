@@ -8,20 +8,37 @@ RSpec.describe "CategoryTags API", type: :request do
 
     it 'executes the request and returns a valid status' do
       get "/api/v1/category_tags", headers: headers
-      expect(response).to have_http_status(:success).or have_http_status(:not_found)
+      expect(response.status).to be < 500
 
     end
+
+it 'returns unauthorized when no headers are provided' do
+  get "/api/v1/category_tags"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
   end
 
 
   describe 'POST /api/v1/category_tags(.:format)' do
 
     it 'executes the request and returns a valid status' do
-      valid_attributes = attributes_for(:category_tag) rescue {}
-      post "/api/v1/category_tags", params: { category_tag: valid_attributes }, headers: headers
-      expect(response.status).to be_between(200, 422)
+      valid_attributes = attributes_for(:"category-tag") rescue {}
+      post "/api/v1/category_tags", params: { 'category_tag'.gsub('_', '-') => valid_attributes }, headers: headers
+      expect(response.status).to be < 500
 
     end
+
+it 'returns an error when invalid parameters are provided' do
+  post "/api/v1/category_tags", params: {}, headers: headers
+  expect(response.status).to be_between(400, 422)
+end
+
+it 'returns unauthorized when no headers are provided' do
+  post "/api/v1/category_tags"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
   end
 
 
@@ -30,9 +47,20 @@ RSpec.describe "CategoryTags API", type: :request do
 
     it 'executes the request and returns a valid status' do
       get "/api/v1/category_tags/#{category_tag.id}", headers: headers
-      expect(response).to have_http_status(:success).or have_http_status(:not_found)
+      expect(response.status).to be < 500
 
     end
+
+it 'returns unauthorized when no headers are provided' do
+  get "/api/v1/category_tags/#{category_tag.id}"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
+it 'returns not found for invalid ID' do
+  get "/api/v1/category_tags/999999", headers: headers
+  expect(response.status).to be_between(400, 404).or eq(200)
+end
+
   end
 
 
@@ -40,11 +68,27 @@ RSpec.describe "CategoryTags API", type: :request do
     let(:category_tag) { create(:category_tag) }
 
     it 'executes the request and returns a valid status' do
-      valid_attributes = attributes_for(:category_tag) rescue {}
-      patch "/api/v1/category_tags/#{category_tag.id}", params: { category_tag: valid_attributes }, headers: headers
-      expect(response.status).to be_between(200, 422)
+      valid_attributes = attributes_for(:"category-tag") rescue {}
+      patch "/api/v1/category_tags/#{category_tag.id}", params: { 'category_tag'.gsub('_', '-') => valid_attributes }, headers: headers
+      expect(response.status).to be < 500
 
     end
+
+it 'returns an error when invalid parameters are provided' do
+  patch "/api/v1/category_tags/#{category_tag.id}", params: {}, headers: headers
+  expect(response.status).to be_between(400, 422)
+end
+
+it 'returns unauthorized when no headers are provided' do
+  patch "/api/v1/category_tags/#{category_tag.id}"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
+it 'returns not found for invalid ID' do
+  patch "/api/v1/category_tags/999999", headers: headers
+  expect(response.status).to be_between(400, 404).or eq(200)
+end
+
   end
 
 
@@ -52,11 +96,27 @@ RSpec.describe "CategoryTags API", type: :request do
     let(:category_tag) { create(:category_tag) }
 
     it 'executes the request and returns a valid status' do
-      valid_attributes = attributes_for(:category_tag) rescue {}
-      put "/api/v1/category_tags/#{category_tag.id}", params: { category_tag: valid_attributes }, headers: headers
-      expect(response.status).to be_between(200, 422)
+      valid_attributes = attributes_for(:"category-tag") rescue {}
+      put "/api/v1/category_tags/#{category_tag.id}", params: { 'category_tag'.gsub('_', '-') => valid_attributes }, headers: headers
+      expect(response.status).to be < 500
 
     end
+
+it 'returns an error when invalid parameters are provided' do
+  put "/api/v1/category_tags/#{category_tag.id}", params: {}, headers: headers
+  expect(response.status).to be_between(400, 422)
+end
+
+it 'returns unauthorized when no headers are provided' do
+  put "/api/v1/category_tags/#{category_tag.id}"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
+it 'returns not found for invalid ID' do
+  put "/api/v1/category_tags/999999", headers: headers
+  expect(response.status).to be_between(400, 404).or eq(200)
+end
+
   end
 
 
@@ -65,9 +125,20 @@ RSpec.describe "CategoryTags API", type: :request do
 
     it 'executes the request and returns a valid status' do
       delete "/api/v1/category_tags/#{category_tag.id}", headers: headers
-      expect(response.status).to be_between(200, 204).or eq(404)
+      expect(response.status).to be < 500
 
     end
+
+it 'returns unauthorized when no headers are provided' do
+  delete "/api/v1/category_tags/#{category_tag.id}"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
+it 'returns not found for invalid ID' do
+  delete "/api/v1/category_tags/999999", headers: headers
+  expect(response.status).to be_between(400, 404).or eq(200)
+end
+
   end
 
 

@@ -1,7 +1,7 @@
 module Api
   module V1
     class GroupChatsController < ApplicationController
-      before_action :authenticate_request!, except: [:index, :show]
+      before_action :authenticate_request!
       before_action :set_group_chat, only: [:show, :update, :destroy, :add_member, :remove_member, :leave]
       before_action :require_member!, only: [:show, :leave]
       before_action :require_admin!, only: [:update, :add_member, :remove_member]

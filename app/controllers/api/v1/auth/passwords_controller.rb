@@ -5,7 +5,12 @@ module Api
         before_action :authenticate_request!, only: [:update]
 
         def forgot
-          user = User.find_by(email: params[:email]) || User.find_by(phone_number: params[:phone_number])
+          unless params[:email].present? || params[:phone_number].present?
+            return render_error(message: 'Email or phone number is required', status: :bad_request)
+          end
+          user = User.find_by(email: params[:email]) if params[:email].present?
+          user ||= User.find_by(phone_number: params[:phone_number]) if params[:phone_number].present?
+          
           if user
             otp = user.generate_otp!
             OtpMailer.otp_email(user, otp).deliver_now if user.email.present?

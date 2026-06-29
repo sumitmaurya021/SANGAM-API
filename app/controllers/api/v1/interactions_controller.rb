@@ -6,9 +6,9 @@ module Api
       def create
         # In the original app this records interactions for the AI Feed Ranking System
         # e.g., view, like, comment, dwell_time, etc.
-        item_type = params[:item_type]
-        item_id = params[:item_id]
-        interaction_type = params[:interaction_type]
+        item_type = params.require(:item_type)
+        item_id = params.require(:item_id)
+        interaction_type = params.require(:interaction_type)
         dwell_time = params[:dwell_time].to_i
 
         # Assume we have an Interaction model:

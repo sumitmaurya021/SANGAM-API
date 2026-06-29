@@ -16,8 +16,8 @@ module Api
 
       def create
         record = Event.new(event_params)
-        # Assign user if user_id exists
-        record.user_id = @current_user.id if record.respond_to?(:user_id=)
+        # Assign user if organizer_id exists
+        record.organizer_id = @current_user.id if record.respond_to?(:organizer_id=)
 
         if record.save
           render_success(message: 'Created successfully', data: EventBlueprint.render_as_hash(record, view: :normal), status: :created)
@@ -41,7 +41,7 @@ module Api
 
       def respond_to_event
         response = @event.event_responses.find_or_initialize_by(user_id: @current_user.id)
-        response.status = params[:status]
+        response.response = params[:status] || params[:response]
 
         if response.save
           render_success(message: 'Response recorded', data: response)
@@ -57,7 +57,7 @@ module Api
       end
 
       def authorize_organizer!
-        unless @event.user_id == @current_user.id || @current_user.super_admin?
+        unless @event.organizer_id == @current_user.id || @current_user.super_admin?
           render_error(message: 'Unauthorized', status: :forbidden)
         end
       end

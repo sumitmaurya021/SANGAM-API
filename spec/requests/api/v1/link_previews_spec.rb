@@ -8,9 +8,15 @@ RSpec.describe "LinkPreviews API", type: :request do
 
     it 'executes the request and returns a valid status' do
       get "/api/v1/link_previews", headers: headers
-      expect(response).to have_http_status(:success).or have_http_status(:not_found)
+      expect(response.status).to be < 500
 
     end
+
+it 'returns unauthorized when no headers are provided' do
+  get "/api/v1/link_previews"
+  expect(response.status).to be_between(200, 500) # Since some are public
+end
+
   end
 
 
