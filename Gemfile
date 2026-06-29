@@ -62,5 +62,6 @@ gem 'kaminari'
 gem 'redis'
 gem "blueprinter", "~> 1.3"
 gem 'rotp'
+gem 'cloudinary', '~> 2.0'
 
 gem "dotenv-rails", "~> 3.2"
