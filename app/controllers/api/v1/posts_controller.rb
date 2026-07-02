@@ -2,6 +2,7 @@ module Api
   module V1
     class PostsController < ApplicationController
       before_action :authenticate_request!, except: [:index, :show]
+      before_action :set_current_user_if_present, only: [:index, :show]
       before_action :set_post, only: [:show, :update, :destroy]
       before_action :authorize_post!, only: [:update, :destroy]
 
@@ -23,7 +24,7 @@ module Api
         render_success(
           message: 'Posts retrieved successfully',
           data: {
-            posts: PostBlueprint.render_as_hash(posts, view: :extended),
+            posts: PostBlueprint.render_as_hash(posts, view: :extended, current_user: @current_user),
             meta: {
               current_page: posts.current_page,
               total_pages: posts.total_pages,
@@ -34,7 +35,7 @@ module Api
       end
 
       def show
-        render_success(message: 'Post retrieved successfully', data: PostBlueprint.render_as_hash(@post, view: :extended))
+        render_success(message: 'Post retrieved successfully', data: PostBlueprint.render_as_hash(@post, view: :extended, current_user: @current_user))
       end
 
       def create
@@ -44,7 +45,7 @@ module Api
           if post.respond_to?(:scheduled_at) && post.scheduled_at.present? && !post.published?
             PublishScheduledPostJob.set(wait_until: post.scheduled_at).perform_later(post.id)
           end
-          render_success(message: 'Post created successfully', data: PostBlueprint.render_as_hash(post, view: :normal), status: :created)
+          render_success(message: 'Post created successfully', data: PostBlueprint.render_as_hash(post, view: :normal, current_user: @current_user), status: :created)
         else
           render_error(message: 'Failed to create post', errors: post.errors.messages)
         end
@@ -52,7 +53,7 @@ module Api
 
       def update
         if @post.update(post_params.merge(edited_at: Time.current))
-          render_success(message: 'Post updated successfully', data: PostBlueprint.render_as_hash(@post, view: :normal))
+          render_success(message: 'Post updated successfully', data: PostBlueprint.render_as_hash(@post, view: :normal, current_user: @current_user))
         else
           render_error(message: 'Failed to update post', errors: @post.errors.messages)
         end

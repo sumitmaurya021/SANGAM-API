@@ -30,6 +30,17 @@ module JwtAuthenticable
       end
     end
 
+    def set_current_user_if_present
+      header = request.headers['Authorization']
+      token = header.split(' ').last if header
+      if token
+        decoded = decode_token(token)
+        if decoded
+          @current_user = User.find_by(id: decoded[:user_id])
+        end
+      end
+    end
+
     def current_user
       @current_user
     end
