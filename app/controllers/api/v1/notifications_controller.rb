@@ -1,15 +1,18 @@
 module Api
   module V1
     class NotificationsController < ApplicationController
-      before_action :authenticate_request!, except: [:index, :show]
+      before_action :authenticate_request!
       before_action :set_notification, only: [:show, :update, :destroy, :mark_read]
 
       def index
-        records = Notification.all.page(params[:page]).per(params[:per_page] || 20)
+        records = @current_user.notifications.recent.page(params[:page]).per(params[:per_page] || 20)
         render_success(message: 'Retrieved successfully', data: NotificationBlueprint.render_as_hash(records, view: :normal))
       end
 
       def show
+        if @notification.recipient_id != @current_user.id
+          return render_error(message: 'Unauthorized', status: :forbidden)
+        end
         render_success(message: 'Retrieved successfully', data: NotificationBlueprint.render_as_hash(@notification, view: :normal))
       end
 

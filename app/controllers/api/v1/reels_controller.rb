@@ -2,6 +2,7 @@ module Api
   module V1
     class ReelsController < ApplicationController
       before_action :authenticate_request!, except: [:index, :show]
+      before_action :set_current_user_if_present, only: [:index, :show]
       before_action :set_reel, only: [:show, :update, :destroy, :view]
 
       def index
@@ -11,7 +12,7 @@ module Api
         render_success(
           message: 'Reels retrieved successfully',
           data: {
-            reels: ReelBlueprint.render_as_hash(reels, view: :normal),
+            reels: ReelBlueprint.render_as_hash(reels, view: :normal, current_user: @current_user),
             meta: {
               current_page: reels.current_page,
               total_pages: reels.total_pages,
@@ -22,7 +23,7 @@ module Api
       end
 
       def show
-        render_success(message: 'Reel retrieved successfully', data: ReelBlueprint.render_as_hash(@reel, view: :normal))
+        render_success(message: 'Reel retrieved successfully', data: ReelBlueprint.render_as_hash(@reel, view: :normal, current_user: @current_user))
       end
 
       def create
@@ -68,7 +69,7 @@ module Api
       end
 
       def reel_params
-        params.require(:reel).permit(:caption, :music, :music_artist, :music_preview_url, :music_title, :hashtags)
+        params.require(:reel).permit(:caption, :music, :music_artist, :music_preview_url, :music_title, :hashtags, :video, :thumbnail, :music_file)
       end
     end
   end
