@@ -1,12 +1,29 @@
 module Api
   module V1
     class ConversationsController < ApplicationController
-      before_action :authenticate_request!, except: [:index, :show]
+      before_action :authenticate_request!
       before_action :set_conversation, only: [:show, :update, :destroy]
 
       def index
-        records = Conversation.all.page(params[:page]).per(params[:per_page] || 20)
-        render_success(message: 'Retrieved successfully', data: ConversationBlueprint.render_as_hash(records, view: :normal))
+        records = Conversation.involving(@current_user).recent.to_a
+        seen_peers = []
+        deduplicated = records.select do |conv|
+          peer_id = conv.sender_id == @current_user.id ? conv.recipient_id : conv.sender_id
+          if seen_peers.include?(peer_id)
+            false
+          else
+            seen_peers.push(peer_id)
+            true
+          end
+        end
+
+        # Paginate manual array
+        page = (params[:page] || 1).to_i
+        per_page = (params[:per_page] || 20).to_i
+        offset = (page - 1) * per_page
+        paginated = deduplicated[offset, per_page] || []
+
+        render_success(message: 'Retrieved successfully', data: ConversationBlueprint.render_as_hash(paginated, view: :normal))
       end
 
       def show
@@ -14,9 +31,24 @@ module Api
       end
 
       def create
+        recipient_id = conversation_params[:recipient_id]
+        if recipient_id.blank?
+          return render_error(message: 'Recipient ID is required')
+        end
+
+        # Check if conversation already exists
+        recipient = User.find_by(id: recipient_id)
+        if recipient.nil?
+          return render_error(message: 'Recipient user not found')
+        end
+
+        existing = Conversation.between(@current_user, recipient)
+        if existing
+          return render_success(message: 'Retrieved existing conversation', data: ConversationBlueprint.render_as_hash(existing, view: :normal))
+        end
+
         record = Conversation.new(conversation_params)
-        # Assign user if user_id exists
-        record.user_id = @current_user.id if record.respond_to?(:user_id=)
+        record.sender_id = @current_user.id
 
         if record.save
           render_success(message: 'Created successfully', data: ConversationBlueprint.render_as_hash(record, view: :normal), status: :created)

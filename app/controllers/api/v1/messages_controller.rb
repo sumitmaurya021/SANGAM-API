@@ -49,7 +49,7 @@ module Api
       private
 
       def set_conversation
-        @conversation = @current_user.conversations.find(params[:conversation_id])
+        @conversation = Conversation.involving(@current_user).find(params[:conversation_id])
       rescue ActiveRecord::RecordNotFound
         render_error(message: 'Conversation not found', status: :not_found)
       end

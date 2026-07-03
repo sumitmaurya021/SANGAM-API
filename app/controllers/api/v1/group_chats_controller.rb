@@ -17,11 +17,17 @@ module Api
       end
 
       def create
-        record = GroupChat.new(group_chat_params)
-        # Assign user if user_id exists
-        record.user_id = @current_user.id if record.respond_to?(:user_id=)
+        record = GroupChat.new(group_chat_params.except(:user_ids))
+        record.owner_id = @current_user.id
 
         if record.save
+          # Add selected users as members
+          user_ids = group_chat_params[:user_ids] || []
+          user_ids.each do |uid|
+            next if uid.to_i == @current_user.id
+            u = User.find_by(id: uid)
+            record.add_member!(u) if u
+          end
           render_success(message: 'Created successfully', data: GroupChatBlueprint.render_as_hash(record, view: :normal), status: :created)
         else
           render_error(message: 'Failed to create', errors: record.errors.messages)
@@ -29,7 +35,7 @@ module Api
       end
 
       def update
-        if @group_chat.update(group_chat_params)
+        if @group_chat.update(group_chat_params.except(:user_ids))
           render_success(message: 'Updated successfully', data: GroupChatBlueprint.render_as_hash(@group_chat, view: :normal))
         else
           render_error(message: 'Failed to update', errors: @group_chat.errors.messages)
@@ -101,7 +107,7 @@ module Api
 
       def group_chat_params
         # Adjust permitted parameters as needed
-        params.require(:group_chat).permit(:description, :members_count, :name, :owner_id)
+        params.require(:group_chat).permit(:description, :members_count, :name, :owner_id, user_ids: [])
       end
     end
   end

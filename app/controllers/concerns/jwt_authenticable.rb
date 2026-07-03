@@ -23,6 +23,7 @@ module JwtAuthenticable
       
       if decoded
         @current_user = User.find_by(id: decoded[:user_id])
+        @current_user.update_columns(last_seen_at: Time.current, online: true) if @current_user
       end
 
       unless @current_user

@@ -154,6 +154,8 @@ Rails.application.routes.draw do
         post :generate_smart_replies
         post :generate_article_content
         post :auto_fill_listing
+        get :giphy_search
+        get :giphy_trending
       end
 
       patch "settings/dark_mode", to: "settings#toggle_dark_mode"

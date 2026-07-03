@@ -87,7 +87,7 @@ class User < ApplicationRecord
     super_admin == true
   end
   def all_friends
-    friends + inverse_friends
+    (friends + inverse_friends).uniq
   end
 
   def friends_with?(user)
@@ -145,7 +145,11 @@ class User < ApplicationRecord
   end
 
   def online
-    is_ai? || read_attribute(:online)
+    is_ai? || (last_seen_at.present? && last_seen_at > 5.minutes.ago)
+  end
+
+  def online?
+    online
   end
 
   def online_status

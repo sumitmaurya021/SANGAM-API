@@ -1,3 +1,6 @@
+require 'net/http'
+require 'json'
+
 module Api
   module V1
     class AiFeaturesController < ApplicationController
@@ -9,8 +12,49 @@ module Api
       end
 
       def rewrite_message
-        params.require(:message)
-        render_success(message: 'Message rewritten', data: { rewritten_message: "Hello! How are you doing today?" })
+        message = params.require(:message)
+        
+        api_key = ENV['GROQ_API_KEY']
+        if api_key.blank?
+          return render_error(message: "Groq API key is not configured in backend .env")
+        end
+
+        uri = URI("https://api.groq.com/openai/v1/chat/completions")
+        req = Net::HTTP::Post.new(uri, {
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{api_key}"
+        })
+        
+        req.body = {
+          model: "llama-3.1-8b-instant",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant. Rewrite the user's message to make it more professional, polite, and grammatically correct while strictly preserving the original language, script, and style of expression (e.g., if the user writes in Hinglish/Latin-script Hindi, rewrite in polite/formal Hinglish; if in Hindi/Devanagari, rewrite in polite Hindi/Devanagari; if in English, rewrite in polite/professional English). Keep the original intent. Return ONLY the rewritten message itself, without any introduction, quotes, greeting, or explanation."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          temperature: 0.7
+        }.to_json
+
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        res = http.request(req)
+
+        if res.code == '200'
+          response_data = JSON.parse(res.body)
+          rewritten = response_data.dig('choices', 0, 'message', 'content')&.strip
+          # Strip enclosing quotes if model returned them
+          rewritten = rewritten.delete_prefix('"').delete_suffix('"').delete_prefix("'").delete_suffix("'")
+          render_success(message: 'Message rewritten', data: { rewritten_message: rewritten })
+        else
+          render_error(message: "Failed to connect to AI service: #{res.body}")
+        end
+      rescue => e
+        render_error(message: "AI rewrite failed: #{e.message}")
       end
 
       def smart_reply
@@ -38,6 +82,37 @@ module Api
         params.require(:image_url)
         image_url = params[:image_url]
         render_success(message: 'Listing auto-filled', data: { title: "Generated Title", price: 100, description: "Generated description from image." })
+      end
+
+      def giphy_search
+        query = params[:q].to_s.strip
+        if query.blank?
+          return giphy_trending
+        end
+
+        api_key = ENV['GIPHY_API_KEY']
+        if api_key.blank?
+          return render_error(message: "Giphy API key is not configured in backend .env")
+        end
+
+        uri = URI("https://api.giphy.com/v1/gifs/search?api_key=#{api_key}&q=#{CGI.escape(query)}&limit=15")
+        response = Net::HTTP.get(uri)
+        render json: JSON.parse(response)
+      rescue => e
+        render_error(message: "Failed to search GIFs: #{e.message}")
+      end
+
+      def giphy_trending
+        api_key = ENV['GIPHY_API_KEY']
+        if api_key.blank?
+          return render_error(message: "Giphy API key is not configured in backend .env")
+        end
+
+        uri = URI("https://api.giphy.com/v1/gifs/trending?api_key=#{api_key}&limit=15")
+        response = Net::HTTP.get(uri)
+        render json: JSON.parse(response)
+      rescue => e
+        render_error(message: "Failed to load trending GIFs: #{e.message}")
       end
     end
   end
