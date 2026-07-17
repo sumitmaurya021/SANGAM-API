@@ -7,7 +7,7 @@ module Api
 
       def index
         groups = Group.all.page(params[:page]).per(params[:per_page] || 20)
-        render_success(message: 'Groups retrieved successfully', data: groups) # Consider GroupBlueprint here later
+        render_success(message: 'Groups retrieved successfully', data: GroupBlueprint.render_as_hash(groups, view: :normal))
       end
 
       def show
