@@ -12,7 +12,7 @@ module Api
         render_success(
           message: 'Comments retrieved successfully',
           data: {
-            comments: comments.as_json(include: :user),
+            comments: comments.as_json(include: [:user, :replied_to_user]),
             meta: {
               current_page: comments.current_page,
               total_pages: comments.total_pages,
@@ -65,7 +65,7 @@ module Api
       end
 
       def comment_params
-        params.require(:comment).permit(:content, :parent_id)
+        params.require(:comment).permit(:content, :parent_id, :replied_to_user_id)
       end
     end
   end

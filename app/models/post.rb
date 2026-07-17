@@ -182,8 +182,9 @@ class Post < ApplicationRecord
 
   def content_or_poll_present
     return if content.present?
+    return if image.attached? || images.attached?
     return if poll.present? || (poll_attributes_present?)
-    errors.add(:content, "can't be blank unless you add a poll")
+    errors.add(:content, "can't be blank unless you add a poll or image")
   end
 
   def poll_attributes_present?
