@@ -81,6 +81,7 @@ module Api
           :content, :image, :visibility, :scheduled_at, :published,
           :link_url, :link_title, :link_description, :link_image_url, :link_domain,
           :location_name, :latitude, :longitude,
+          :music_title, :music_artist, :music_preview_url,
           images: [],
           poll_attributes: [
             :question, :ends_at,

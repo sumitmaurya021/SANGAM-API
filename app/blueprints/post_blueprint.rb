@@ -2,7 +2,7 @@ class PostBlueprint < Blueprinter::Base
   identifier :id
   
   view :normal do
-    fields :content, :location_name, :visibility, :published, :created_at, :updated_at, :likes_count, :comments_count
+    fields :content, :location_name, :visibility, :published, :created_at, :updated_at, :likes_count, :comments_count, :music_title, :music_artist, :music_preview_url
     
     field :liked_by_current_user do |post, options|
       options[:current_user].present? ? post.liked_by?(options[:current_user]) : false
