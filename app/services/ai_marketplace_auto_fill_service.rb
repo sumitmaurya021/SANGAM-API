@@ -3,24 +3,39 @@ require "uri"
 require "json"
 
 class AiMarketplaceAutoFillService
-  def initialize(image_data_url)
-    @image_data_url = image_data_url
+  def initialize(params)
+    if params.is_a?(Hash)
+      @image_data_url = params[:image_data_url]
+      @description = params[:description]
+    else
+      @image_data_url = params
+    end
   end
 
   def generate
     api_key = ENV["GROQ_API_KEY"]
 
-    return { success: false, error: "No image provided" } if @image_data_url.blank?
+    if @image_data_url.blank? && @description.blank?
+      return { success: false, error: "No image or description provided" }
+    end
 
-    messages = [
-      {
+    messages = []
+    if @image_data_url.present?
+      messages << {
         role: "user",
         content: [
-          { type: "text", text: "You are an expert marketplace seller. Analyze this image of an item being sold. Generate a JSON object with exactly three keys: 'title' (a short, catchy title for the listing), 'description' (a detailed and appealing description of the item), and 'category' (you MUST choose exactly one from this list: electronics, furniture, clothing, vehicles, property, sports, books, toys, garden, other). Do not output any markdown formatting like ```json, just output the raw JSON object." },
+          { type: "text", text: "You are an expert marketplace seller. Analyze this image of an item being sold. Generate a JSON object with exactly four keys: 'title' (a short, catchy title for the listing), 'description' (a detailed and appealing description of the item), 'category' (you MUST choose exactly one from this list: electronics, furniture, clothing, vehicles, property, sports, books, toys, garden, other), and 'price' (estimated numeric price value). Do not output any markdown formatting like ```json, just output the raw JSON object." },
           { type: "image_url", image_url: { url: @image_data_url } }
         ]
       }
-    ]
+      model = "llama-3.2-11b-vision-preview"
+    else
+      messages << {
+        role: "user",
+        content: "You are an expert marketplace seller. Based on this text description: '#{@description}', optimize and structure the marketplace listing. Return ONLY a raw JSON object with keys: 'title' (catchy title), 'description' (enhanced description), 'category' (choose exactly one from: electronics, furniture, clothing, vehicles, property, sports, books, toys, garden, other), 'condition' (choose from: brand_new, like_new, good, fair), and 'price' (estimated reasonable price integer or number). Do not output markdown like ```json."
+      }
+      model = "llama-3.1-8b-instant"
+    end
 
     uri = URI("https://api.groq.com/openai/v1/chat/completions")
     request = Net::HTTP::Post.new(uri)
@@ -28,7 +43,7 @@ class AiMarketplaceAutoFillService
     request["Content-Type"] = "application/json"
 
     request.body = JSON.dump({
-      "model" => "meta-llama/llama-4-scout-17b-16e-instruct",
+      "model" => model,
       "messages" => messages,
       "temperature" => 0.5,
       "max_completion_tokens" => 500

@@ -79,9 +79,21 @@ module Api
       end
 
       def auto_fill_listing
-        params.require(:image_url)
-        image_url = params[:image_url]
-        render_success(message: 'Listing auto-filled', data: { title: "Generated Title", price: 100, description: "Generated description from image." })
+        image_data_url = params[:image_data_url] || params[:image_url]
+        description = params[:description]
+        
+        if image_data_url.blank? && description.blank?
+          return render_error(message: "Image or description is required")
+        end
+
+        service = AiMarketplaceAutoFillService.new({ image_data_url: image_data_url, description: description })
+        result = service.generate
+
+        if result[:success]
+          render_success(message: 'Listing auto-filled', data: result[:data])
+        else
+          render_error(message: result[:error] || "Failed to auto-fill listing")
+        end
       end
 
       def giphy_search

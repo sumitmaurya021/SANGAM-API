@@ -24,7 +24,7 @@ class AiCaptionGeneratorService
           { type: "image_url", image_url: { url: "data:#{mime_type};base64,#{base64_image}" } }
         ]
       }
-      model = "meta-llama/llama-4-scout-17b-16e-instruct"
+      model = "llama-3.2-11b-vision-preview"
     else
       messages << {
         role: "user",

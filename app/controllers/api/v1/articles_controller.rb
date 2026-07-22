@@ -15,8 +15,9 @@ module Api
       end
 
       def create
-        record = Article.new(article_params)
-        # Assign user if user_id exists
+        p = article_params
+        p[:content] ||= p.delete(:body) if p[:body].present?
+        record = Article.new(p)
         record.user_id = @current_user.id if record.respond_to?(:user_id=)
 
         if record.save
@@ -27,7 +28,9 @@ module Api
       end
 
       def update
-        if @article.update(article_params)
+        p = article_params
+        p[:content] ||= p.delete(:body) if p[:body].present?
+        if @article.update(p)
           render_success(message: 'Updated successfully', data: ArticleBlueprint.render_as_hash(@article, view: :normal))
         else
           render_error(message: 'Failed to update', errors: @article.errors.messages)
@@ -52,8 +55,7 @@ module Api
       end
 
       def article_params
-        # Adjust permitted parameters as needed
-        params.require(:article).permit(:published, :title, :user_id, :views_count)
+        params.require(:article).permit(:title, :content, :body, :published, :cover_image)
       end
     end
   end
